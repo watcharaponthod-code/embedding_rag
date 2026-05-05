@@ -1,0 +1,53 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: webclient-document-uploader
+  namespace: ai-research
+ 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webclient-document-uploader
+      tier: backend
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: webclient-document-uploader
+        tier: backend
+    spec:
+      containers:
+        - name: webclient-document-uploader
+          image: REPLACE_IMAGE
+          ports:
+            - name: http
+              containerPort: 3001
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: webclient-document-uploader-config
+            - secretRef:
+                name: webclient-document-uploader-secret
+          env:
+            - name: PYTHON_PATH
+              value: /usr/bin/python3
+          resources:
+            limits:
+              cpu: '1'
+              memory: 2Gi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: private-registry-secret
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+ 

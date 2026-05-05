@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: webclient-chat-service
+  labels:
+    app: webclient-chat
+spec:
+  type: NodePort
+  selector:
+    app: webclient-chat
+    tier: backend
+  ports:
+  - port: 3001
+    targetPort: 3001
+    nodePort: 32001
+    protocol: TCP
+    name: http
+  sessionAffinity: None
+
+---
+# Optional: LoadBalancer service for external access
+# Uncomment if you want to expose the service externally without Ingress
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: webclient-document-upload-lb
+#   labels:
+#     app: webclient-document-upload
+# spec:
+#   type: LoadBalancer
+#   selector:
+#     app: webclient-document-upload
+#     tier: backend
+#   ports:
+#   - port: 80
+#     targetPort: 3001
+#     protocol: TCP
+#     name: http

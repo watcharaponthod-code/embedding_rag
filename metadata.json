@@ -1,0 +1,5 @@
+{
+  "name": "Sycapt Vector Docs",
+  "description": "A professional document management interface for vectorizing PDFs using Ollama and PostgreSQL/pgvector.",
+  "requestFramePermissions": []
+}

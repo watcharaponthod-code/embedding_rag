@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: webclient-document-uploader-config
+  labels:
+    app: webclient-document-uploader
+data:
+  # Server Configuration
+  PORT: "3001"
+
+  # Ollama Service Configuration
+  OLLAMA_HOST: "http://10.0.2.191:11434"
+  OLLAMA_MODEL: "bge-m3"
+  OLLAMA_VISION_MODEL: "qwen3-vl:30b"
+  OLLAMA_CHAT_MODEL: "gpt-oss:20b"
+  OLLAMA_RERANKER_MODEL: "qllama/bge-reranker-v2-m3:f16"
+
+  # Python Configuration
+  PYTHON_PATH: "/usr/bin/python3"
+
+  # Node Environment
+  NODE_ENV: "production"

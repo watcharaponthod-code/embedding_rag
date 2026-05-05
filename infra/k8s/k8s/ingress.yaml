@@ -1,0 +1,48 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: webclient-document-upload-ingress
+  labels:
+    app: webclient-document-upload
+  annotations:
+    # nginx ingress controller annotations
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-body-size: "500m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+
+    # Uncomment for SSL/TLS
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+
+  # Uncomment for TLS/SSL
+  # tls:
+  # - hosts:
+  #   - your-domain.com
+  #   secretName: webclient-tls-secret
+
+  rules:
+  - host: internal-llm.sycapt.com  # Replace with your actual domain
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: webclient-caht-service
+            port:
+              number: 3001
+
+  # Optional: Additional hosts
+  # - host: another-domain.com
+  #   http:
+  #     paths:
+  #     - path: /
+  #       pathType: Prefix
+  #       backend:
+  #         service:
+  #           name: webclient-document-upload
+  #           port:
+  #             number: 80

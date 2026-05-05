@@ -1,0 +1,65 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: webclient-document-upload
+
+# Namespace for all resources
+namespace: default
+
+# Common labels applied to all resources
+commonLabels:
+  app: webclient-document-upload
+  managed-by: kustomize
+
+# Resources to include
+resources:
+  - configmap.yaml
+  - secret.yaml
+  - deployment.yaml
+  - service.yaml
+  # Uncomment to include PVC
+  # - pvc.yaml
+  # Uncomment to include Ingress
+  # - ingress.yaml
+
+# Images to patch (useful for updating image tags without modifying files)
+images:
+  - name: your-registry/webclient-document-upload
+    newName: your-registry/webclient-document-upload
+    newTag: latest
+
+# ConfigMap generator (alternative to configmap.yaml)
+# Uncomment to generate ConfigMap from literals or files
+# configMapGenerator:
+#   - name: app-config
+#     literals:
+#       - PORT=3001
+#       - OLLAMA_HOST=http://10.0.2.191:11434
+
+# Secret generator (alternative to secret.yaml)
+# Uncomment to generate Secret from literals or files
+# secretGenerator:
+#   - name: app-secrets
+#     literals:
+#       - DB_HOST=10.0.1.159
+#       - DB_USER=admin
+#       - DB_PASSWORD=ปิดไว้นะจ๊ะ
+#       - DB_NAME=docsvt
+#       - DB_PORT=30104
+
+# Patches to apply
+# patchesStrategicMerge:
+#   - patches/increase-replicas.yaml
+
+# JSON patches
+# patchesJson6902:
+#   - target:
+#       group: apps
+#       version: v1
+#       kind: Deployment
+#       name: webclient-document-upload
+#     patch: |-
+#       - op: replace
+#         path: /spec/replicas
+#         value: 3

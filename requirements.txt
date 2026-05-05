@@ -1,0 +1,20 @@
+# Python dependencies for document processing and AI/ML features
+
+# PyTorch - Deep learning framework
+torch>=2.0.0
+
+# Transformers - Hugging Face transformers for embeddings and reranking
+transformers>=4.30.0
+
+# Document Processing
+pymupdf>=1.23.0  # PDF processing (also known as fitz)
+python-pptx>=0.6.21  # PowerPoint processing
+python-docx>=0.8.11 # Word processing
+
+# Additional dependencies that may be needed
+# Uncomment if required by your scripts
+
+# pillow>=10.0.0  # Image processing
+# numpy>=1.24.0  # Numerical computing
+# sentencepiece>=0.1.99  # Tokenization for some models
+# accelerate>=0.20.0  # For faster model loading

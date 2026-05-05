@@ -1,0 +1,160 @@
+stages:
+  - build
+  - deploy-staging
+  - deploy-production
+
+variables:
+  # Docker image configuration
+  DOCKER_IMAGE_NAME: webclient-document-uploader
+  IMAGE_TAG: $DOCKER_REGISTRY/$DOCKER_IMAGE_NAME:$CI_COMMIT_SHORT_SHA
+  IMAGE_LATEST: $DOCKER_REGISTRY/$DOCKER_IMAGE_NAME:latest
+
+# Build Docker image and push to registry
+build:
+  stage: build
+  image: docker:27
+  services:
+    - docker:27-dind
+  before_script:
+    - echo $DOCKER_REGISTRY_PASSWORD | docker login -u $DOCKER_REGISTRY_USER --password-stdin $DOCKER_REGISTRY
+  script:
+    - |
+      # Verify Commit
+      echo "Current Commit SHA: $CI_COMMIT_SHA"
+      echo "Commit Message: $CI_COMMIT_MESSAGE"
+      git log -1
+
+      # Pull latest image for layer caching
+      docker pull $IMAGE_LATEST || true
+
+      # Build Docker image using cache from latest
+      docker build --cache-from $IMAGE_LATEST --build-arg BUILDKIT_INLINE_CACHE=1 -f infra/docker/Dockerfile -t $IMAGE_TAG -t $IMAGE_LATEST .
+
+      docker push $IMAGE_LATEST
+
+      # Show image info
+      echo "Built and pushed image $IMAGE_TAG"
+  only:
+    - dev
+    - main
+
+# Deploy to staging environment (auto-deploy on dev branch)
+deploy-staging:
+  stage: deploy-staging
+  image:
+    name: alpine/kubectl:latest
+    entrypoint: [""]
+  variables:
+    KUBE_NAMESPACE: ai-research
+  before_script:
+    - mkdir -p $HOME/.kube
+    - echo "$DEV_KUBECONFIG" > $HOME/.kube/config
+    - chmod 600 $HOME/.kube/config
+    - kubectl version --client
+    - kubectl config view
+    - kubectl config current-context
+  script:
+    - |
+      set -e
+
+      echo "Checking namespace ${KUBE_NAMESPACE}..."
+      kubectl get ns ${KUBE_NAMESPACE} || kubectl create ns ${KUBE_NAMESPACE}
+
+      echo "Creating Docker registry pull secret..."
+      kubectl create secret docker-registry docker-registry-secret \
+        --docker-server=${DOCKER_REGISTRY} \
+        --docker-username=${DOCKER_REGISTRY_USER} \
+        --docker-password=${DOCKER_REGISTRY_PASSWORD} \
+        --namespace=${KUBE_NAMESPACE} \
+        --dry-run=client -o yaml | kubectl apply -f -
+
+      echo "Updating deployment with image ${IMAGE_TAG}..."
+      # Corrected path to deployment.yaml (infra/k8s/k8s/deployment.yaml)
+      sed "s|REPLACE_IMAGE|${IMAGE_TAG}|g" infra/k8s/k8s/deployment.yaml | kubectl apply -f - -n ${KUBE_NAMESPACE}
+
+      echo "Waiting for deployment rollout..."
+      kubectl rollout status deployment/webclient-document-uploader -n ${KUBE_NAMESPACE} --timeout=5m
+
+      echo "Verifying deployment..."
+      kubectl get pods -n ${KUBE_NAMESPACE} -l app=webclient-document-uploader
+      echo "Deployed successfully!"
+  environment:
+    name: staging
+    # url: https://${INGRESS_HOST_STAGING}  # Commented due to network issues
+  only:
+    - dev
+
+
+# Deploy to production environment (Auto-deploy on main branch)
+deploy-production:
+  stage: deploy-production
+  image:
+    name: alpine/kubectl:latest
+    entrypoint: [""]
+  variables:
+    KUBE_NAMESPACE: ai-research
+  before_script:
+    - mkdir -p $HOME/.kube
+    - echo "$DEV_KUBECONFIG" > $HOME/.kube/config
+    - chmod 600 $HOME/.kube/config
+    - kubectl version --client
+    - kubectl config view
+    - kubectl config current-context
+  script:
+    - |
+      set -e
+
+      echo "Checking namespace ${KUBE_NAMESPACE}..."
+      kubectl get ns ${KUBE_NAMESPACE} || kubectl create ns ${KUBE_NAMESPACE}
+
+      echo "Creating Docker registry pull secret..."
+      kubectl create secret docker-registry docker-registry-secret \
+        --docker-server=${DOCKER_REGISTRY} \
+        --docker-username=${DOCKER_REGISTRY_USER} \
+        --docker-password=${DOCKER_REGISTRY_PASSWORD} \
+        --namespace=${KUBE_NAMESPACE} \
+        --dry-run=client -o yaml | kubectl apply -f -
+
+      echo "Updating deployment with image ${IMAGE_TAG}..."
+      # Corrected path to deployment.yaml
+      sed "s|REPLACE_IMAGE|${IMAGE_TAG}|g" infra/k8s/k8s/deployment.yaml | kubectl apply -f - -n ${KUBE_NAMESPACE}
+
+      echo "Waiting for deployment rollout..."
+      kubectl rollout status deployment/webclient-document-uploader -n ${KUBE_NAMESPACE} --timeout=10m
+
+      echo "Verifying deployment..."
+      kubectl get pods -n ${KUBE_NAMESPACE} -l app=webclient-document-uploader
+      echo "Deployed successfully!"
+  environment:
+    name: production
+    # url: https://${INGRESS_HOST_PRODUCTION}  # Commented due to network issues
+  only:
+    - main
+    - dev
+
+# Rollback production (manual action)
+rollback-production:
+  stage: deploy-production
+  image:
+    name: alpine/kubectl:latest
+    entrypoint: [""]
+  variables:
+    KUBE_NAMESPACE: ai-research
+  before_script:
+    - mkdir -p $HOME/.kube
+    - echo "$DEV_KUBECONFIG" > $HOME/.kube/config
+    - chmod 600 $HOME/.kube/config
+    - kubectl version --client
+    - kubectl config view
+    - kubectl config current-context
+  script:
+    - |
+      set -e
+      echo "Rolling back deployment..."
+      kubectl rollout undo deployment/webclient-document-uploader -n ${KUBE_NAMESPACE}
+      kubectl rollout status deployment/webclient-document-uploader -n ${KUBE_NAMESPACE}
+      echo "Rollback completed!"
+  when: manual
+  only:
+    - main
+    - dev

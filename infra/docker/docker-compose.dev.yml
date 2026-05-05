@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  webclient-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: webclient-document-upload-dev
+    ports:
+      - "5173:5173"  # Vite frontend
+      - "3001:3001"  # Backend API
+    volumes:
+      # Mount source code for hot-reloading
+      - .:/app
+      - /app/node_modules
+      - /app/uploads
+    environment:
+      - NODE_ENV=development
+      - PYTHON_PATH=/usr/bin/python3
+    command: npm run dev:all
+    stdin_open: true
+    tty: true

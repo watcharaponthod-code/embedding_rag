@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sycapt Vector Docs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Inter"', '"Sarabun"', "sans-serif"],
+            },
+            colors: {
+              sycapt: {
+                red: "#D32F2F" /* Corporate Red */,
+                "red-hover": "#B71C1C",
+                dark: "#263238" /* Slate Grey Sidebar */,
+                gray: "#455A64" /* Text Grey */,
+                "light-gray": "#F5F5F5" /* AI Buปิดไว้นะจ๊ะe */,
+                "user-bg":
+                  "#FFFFFF" /* User Buปิดไว้นะจ๊ะe (White with Red Border) */,
+                border: "#E0E0E0",
+              },
+            },
+            animation: {
+              "fade-in": "fadeIn 0.5s ease-out",
+              "slide-up": "slideUp 0.3s ease-out",
+            },
+            boxShadow: {
+              soft: "0 2px 10px rgba(0, 0, 0, 0.05)",
+              glow: "0 0 10px rgba(211, 47, 47, 0.2)",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        font-family: "Inter", "Sarabun", sans-serif;
+        background-color: #f8fafc;
+        /* Clean off-white background */
+        -webkit-font-smoothing: antialiased;
+        color: #263238;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Custom Scrollbar */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cfd8dc;
+        border-radius: 3px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #b0bec5;
+      }
+
+      /* Markdown Styles inside Chat */
+      .prose h1,
+      .prose h2,
+      .prose h3 {
+        color: #263238;
+        font-weight: 600;
+      }
+
+      .prose strong {
+        color: #d32f2f;
+      }
+
+      .prose ul {
+        list-style-type: disc;
+        padding-left: 1.2em;
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+          "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+          "react/": "https://esm.sh/react@^19.2.3/",
+          "react": "https://esm.sh/react@^19.2.3"
+        }
+      }
+    </script>
+    <link rel="stylesheet" href="/index.css" />
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/index.tsx"></script>
+  </body>
+</html>
