@@ -30,6 +30,101 @@ The system supports three distinct pathways for data entry:
 
 The database is built on PostgreSQL 15 with the pgvector extension. It is designed to handle both structured relational data and high-dimensional vector embeddings.
 
+### Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    USER {
+        int id PK
+        string name
+        string email UK
+        string username UK
+        string password
+        string department
+        string role
+        string avatar_url
+        timestamp created_at
+    }
+    DOCUMENTS {
+        int id PK
+        string document_name
+        string file_type
+        string project_name
+        string client_name
+        string source_id
+        timestamp created_at
+    }
+    DOCUMENT_CHUNKS {
+        bigint id PK
+        int doc_id FK
+        text content
+        jsonb metadata
+        tsvector fts
+        vector embedding
+    }
+    DOCUMENT_IMAGES {
+        int id PK
+        int doc_id FK
+        int page_number
+        int image_index
+        string image_path
+        bytea image_data
+        text description
+        vector embedding
+        jsonb metadata
+        tsvector fts
+    }
+    CONTENT_NODES {
+        bigint id PK
+        string node_type
+        string title
+        text content
+        string content_hash UK
+        jsonb metadata
+        vector embedding
+        tsvector fts
+        timestamp created_at
+    }
+    CONTENT_RELATIONSHIPS {
+        bigint id PK
+        bigint source_node_id FK
+        bigint target_node_id FK
+        string relationship_type
+        timestamp created_at
+    }
+    EMAIL_ATTRIBUTES {
+        bigint node_id PK,FK
+        string subject
+        string from_address
+        string_array to_addresses
+        timestamp email_date
+        string message_id UK
+        string thread_id
+    }
+    FILE_ATTRIBUTES {
+        bigint node_id PK,FK
+        string original_filename
+        string file_type
+        string storage_url
+        string processing_status
+    }
+    IMAGE_ATTRIBUTES {
+        bigint node_id PK,FK
+        string image_path
+        text description
+        text ocr_text
+        int page_number
+    }
+
+    DOCUMENTS ||--o{ DOCUMENT_CHUNKS : "contains"
+    DOCUMENTS ||--o{ DOCUMENT_IMAGES : "contains"
+    CONTENT_NODES ||--o{ CONTENT_RELATIONSHIPS : "source"
+    CONTENT_NODES ||--o{ CONTENT_RELATIONSHIPS : "target"
+    CONTENT_NODES ||--|| EMAIL_ATTRIBUTES : "has"
+    CONTENT_NODES ||--|| FILE_ATTRIBUTES : "has"
+    CONTENT_NODES ||--|| IMAGE_ATTRIBUTES : "has"
+```
+
 ### Entity Relationship Description
 
 1.  **User Table**: Manages authentication and user profiles.
