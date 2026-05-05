@@ -1,133 +1,68 @@
-<<<<<<< HEAD
-# Webclient Document Upload
+# Vector Docs (Enterprise RAG System)
 
-Project นี้เป็นเว็บแอพพลิเคชั่นสำหรับอัพโหลดและจัดการเอกสาร (Upload PDF/PPTX) และค้นหาข้อมูลร (Vector Search) โดยใช้เทคโนโลยีดังนี้:
-- **Frontend**: React, Vite, TypeScript
-- **Backend**: Node.js, Express, TypeScript
-- **Python Scripts**: สำหรับการประมวลผลเอกสาร PDF, PPTX และ Reranking (ใช้ PyMuPDF, python-pptx, Transformers)
-- **Database**: PostgreSQL (เชื่อมต่อผ่าน node-postgres)
+ระบบจัดการเอกสารและฐานความรู้อัจฉริยะ (RAG - Retrieval-Augmented Generation) ที่รองรับการนำเข้าข้อมูลจากหลากหลายแหล่ง (Hybrid Ingestion) เพื่อทำ Vector Search และถาม-ตอบด้วย AI
 
-## การติดตั้ง (Installation)
+---
 
-### 1. Python Dependencies
-โปรเจ็คนี้มีการใช้ Python script (ในโฟลเดอร์ `server/scripts` และ `server/reranker_script.py`) สำหรับการ Extract ข้อมูลและทำ Reranking จำเป็นต้องติดตั้ง library ดังนี้:
+## 🏗 ผังการทำงานของระบบ (Architecture)
 
+### 1. การนำเข้าข้อมูล (Data Ingestion Paths)
+ระบบรองรับการนำเข้าข้อมูล 3 ช่องทางหลัก:
+*   **Manual Upload**: ผู้ใช้จัดการอัปโหลดไฟล์ (PDF, PPTX, DOCX) ผ่านหน้าเว็บโดยตรง ระบบจะทำการสกัดข้อความและรูปภาพอัตโนมัติ
+*   **Automation (Email Ingestion)**: ระบบดักจับข้อมูลจาก Email (Subject, Body, Attachments) ผ่าน Webhook (เช่น n8n) เพื่อนำข้อมูลเข้าสู่ระบบโดยอัตโนมัติ
+*   **Pre-processed Data Integration**: รองรับการนำเข้าข้อมูลที่ผ่านการประมวลผลและทำ Embedding มาแล้วจากบริการภายนอก (เช่น Mantis) เพื่อจัดเก็บลงฐานข้อมูลโดยตรง
+
+### 2. การประมวลผล AI (AI Engine)
+*   **Embedding**: ใช้โมเดล **BGE-M3** สำหรับการสร้าง Vector ที่มีความละเอียดสูงและรองรับภาษาไทยได้ดีเยี่ยม
+*   **Reranking**: ใช้ **BGE-Reranker-v2-m3** เพื่อจัดลำดับความเกี่ยวข้องของข้อมูลใหม่ ให้ได้คำตอบที่แม่นยำที่สุด
+*   **Generation**: ใช้โมเดลภาษาขนาดใหญ่ (LLM) เช่น **Llama3** หรือ **Qwen** ในการสร้างคำตอบที่ดูเป็นธรรมชาติและอ้างอิงจากฐานข้อมูลจริง
+
+---
+
+## 🎨 ผังโครงสร้าง Infrastructure (Docker & K8s)
+ระบบออกแบบตามมาตรฐาน Cloud-native:
+*   **Frontend**: React + Vite + TypeScript
+*   **Backend**: Node.js Express + TypeScript
+*   **AI Engine**: Ollama (Self-hosted) สำหรับรันโมเดล AI ภายในองค์กร
+*   **Database**: PostgreSQL 15+ พร้อม Extension `pgvector` สำหรับค้นหาข้อมูลแบบ Vector 1024-dim
+*   **Orchestration**: รองรับการติดตั้งผ่าน Docker Compose และ Kubernetes (K8s) พร้อมระบบ Auto-scaling
+
+---
+
+## 🚀 การติดตั้งและเริ่มต้นใช้งาน (Getting Started)
+
+### 1. ตั้งค่าฐานข้อมูล
 ```bash
-pip install torch transformers pymupdf python-pptx
+# เตรียมตารางข้อมูลเริ่มต้น
+npm run server src/server/scripts/init_db.ts
 ```
 
-> **หมายเหตุ**: ควรตรวจสอบ version ของ python และ pip ให้ถูกต้องก่อนการติดตั้ง
-
-### 2. Node.js Dependencies
-ติดตั้ง dependencies ของฝั่ง Node.js และ Frontend ตามไฟล์ `package.json`:
-
+### 2. ติดตั้ง Dependencies
 ```bash
+# Node.js
 npm install
+
+# Python (สำหรับ Document Extractors)
+pip install pymupdf python-pptx mammoth sharp
 ```
 
-## การรันโปรเจ็ค (Running the Project)
+### 3. การตั้งค่า Environment Variables (`.env`)
+ตั้งค่าการเชื่อมต่อฐานข้อมูลและ Ollama Endpoint ในไฟล์ `.env`
 
-สามารถรันทั้ง Frontend และ Backend Server พร้อมกันได้ด้วย AIO command:
-
+### 4. การรันโปรเจ็ค
 ```bash
 npm run dev:all
 ```
 
-> **Note**: คำสั่งนี้จะทำการ run:
-> - **Backend (Express)**: ที่ port `3001` (หรือตามค่าใน `.env`)
-> - **Frontend (Vite)**: ที่ port `5173`
-=======
-# WebClient Document Uploader
+---
 
+## 📝 ฟีเจอร์เด่น
+*   **Hybrid Search**: ผสมผสาน Semantic Search และ Keyword Search (Full-text) เพื่อความแม่นยำสูงสุด
+*   **Vision Analysis**: วิเคราะห์และอธิบายรูปภาพภายในเอกสารอัตโนมัติ
+*   **Multi-tenant Support**: รองรับการแยกข้อมูลตามโครงการ (Project) และลูกค้า (Client)
+*   **Real-time Logs**: ระบบติดตามการประมวลผลเอกสารแบบ Real-time ผ่าน SSE
 
+---
 
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitrepo.sycapt.com:10990/research/ai/webclient-document-uploader.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://gitrepo.sycapt.com:10990/research/ai/webclient-document-uploader/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
->>>>>>> ad4329356aab133adc8324e2f2a4d0511cb67ee5"# embedding_rag" 
+## 📄 License
+Proprietary - AI Research Team

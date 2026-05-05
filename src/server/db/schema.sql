@@ -1,6 +1,19 @@
 -- Enable pgvector extension
 CREATE EXTENSION IF NOT EXISTS vector;
 
+-- User Table for Authentication
+CREATE TABLE IF NOT EXISTS "user" (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    username TEXT UNIQUE,
+    password TEXT NOT NULL,
+    department TEXT DEFAULT 'General',
+    role TEXT DEFAULT 'user',
+    avatar_url TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Documents Table
 CREATE TABLE IF NOT EXISTS documents (
     id SERIAL PRIMARY KEY,
